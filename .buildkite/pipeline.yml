@@ -10,8 +10,7 @@ steps:
       - mkdir -p /root/rom_workspace && cd /root/rom_workspace
       
       - echo "Initializing LineageOS 24.0 (Android 17) Repository Manifest..."
-      - /root/.buildkite-agent/bin/repo init -u https://github.com -b lineage-24.0 --git-lfs --depth=1
-      
+      - /root/.buildkite-agent/bin/repo init -u https://github.com/LineageOS/android.git -b lineage-24.0 --git-lfs
       - echo "Syncing remote trees (This fetches roughly 150GB+ of codebase data)..."
       - /root/.buildkite-agent/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
     agents:
