@@ -5,7 +5,6 @@ steps:
       - "echo 'Setting Git environment rules...'"
       - "git config --global user.name 'Local Buildkite Agent'"
       - "git config --global user.email 'agent@localpc.internal'"
-      - " curl -LSs https://gist.githubusercontent.com/manohar199/fa493109d624b56238b64b9179f1d0d3/raw/728d7bd95561a7f05fb7fd91ea49bc13c5b39629/rm.sh | bash
       - "echo 'Creating AOSP source directory workspace...'"
       - "mkdir -p /root/rom_workspace && cd /root/rom_workspace"
       - "echo 'Initializing LineageOS 24.0 (Android 17) Repository Manifest...'"
