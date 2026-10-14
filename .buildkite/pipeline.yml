@@ -1,0 +1,50 @@
+steps:
+  - label: "🔄 Sync LineageOS 24.0 Source Tree"
+    key: "sync"
+    commands:
+      - echo "Setting Git environment rules..."
+      - git config --global user.name "Local Buildkite Agent"
+      - git config --global user.email "agent@localpc.internal"
+      
+      - echo "Creating AOSP source directory workspace..."
+      - mkdir -p /root/rom_workspace && cd /root/rom_workspace
+      
+      - echo "Initializing LineageOS 24.0 (Android 17) Repository Manifest..."
+      - /root/.buildkite-agent/bin/repo init -u https://github.com -b lineage-24.0 --git-lfs --depth=1
+      
+      - echo "Syncing remote trees (This fetches roughly 150GB+ of codebase data)..."
+      - /root/.buildkite-agent/bin/repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+    agents:
+      queue: "custom-rom"
+
+  - label: "📂 Execute Remote Gist & Setup Build Environment"
+    key: "device_prep"
+    depends_on: "sync"
+    commands:
+      - cd /root/rom_workspace
+      - echo "Downloading and running your custom build preparation script from Gist..."
+      - curl -LSs https://gist.githubusercontent.com/manohar199/f85699164d889c7aa4855f57af466e66/raw/72f88e3722c27d37bb05253148639f0823cab095/build.sh | bash 
+    agents:
+      queue: "custom-rom"
+
+  - label: "🛠️ Compile LineageOS 24 Custom ROM"
+    key: "compile"
+    depends_on: "device_prep"
+    commands:
+      - cd /root/rom_workspace
+      
+      - echo "Enabling Compiler Cache (ccache) for local hardware acceleration..."
+      - export USE_CCACHE=1
+      - export CCACHE_DIR="/root/.ccache"
+      - ccache -M 50G
+      
+      - echo "Sourcing environment configuration helpers..."
+      - source build/envsetup.sh
+      
+      - echo "Lunching device configuration target..."
+      - lunch lineage_spring-cp2a-user
+      
+      - echo "Starting ROM Compilation..."
+      - mka bacon -j$(nproc --all)
+    agents:
+      queue: "custom-rom"
