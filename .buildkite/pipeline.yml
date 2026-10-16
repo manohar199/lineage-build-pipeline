@@ -2,16 +2,24 @@ steps:
   - label: "🔄 Sync LineageOS 24.0 Source Tree"
     key: "sync"
     commands:
-      - "echo 'Setting Git environment rules...'"
+      - "echo 'Setting Git environment rules for large repositories...'"
       - "git config --global user.name 'Local Buildkite Agent'"
       - "git config --global user.email 'agent@localpc.internal'"
+      
+      # Boost Git network transfer thresholds and buffer size to handle heavy zip packs
+      - "git config --global http.postBuffer 1048576000"
+      - "git config --global https.postBuffer 1048576000"
+      
       - "echo 'Creating AOSP source directory workspace...'"
       - "mkdir -p /root/rom_workspace && cd /root/rom_workspace"
-      - "echo 'Initializing LineageOS 24.0 (Android 17) Repository Manifest...'"
-      # Fixed internal quotes by using single quotes inside double quotes
-      - "echo 'y' | repo init -u https://github.com/LineageOS/android.git -b lineage-24.0 --git-lfs"
-      - "echo 'Syncing remote trees (This fetches roughly 150GB+ of codebase data)...'"
-      - "repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags"
+      
+      - "echo 'Initializing LineageOS 24.0 Shallow Manifest...'"
+      # Crucial: --depth=1 speeds up download times by skipping deep Git history log streams
+      - "echo 'y' | repo init -u https://github.com/LineageOS/android.git -b lineage-24.0 --depth=1 --git-lfs"
+      
+      - "echo 'Syncing remote trees with optimized thread jobs...'"
+      # Swapped out $(nproc) for an explicit, safer network job pool (-j4 or -j8) to avoid IP connection timeouts
+      - "repo sync -c -j4 --fail-fast --force-sync --no-clone-bundle --no-tags"
     agents:
       queue: "custom-rom"
 
@@ -39,6 +47,7 @@ steps:
       - "echo 'Lunching device configuration target...'"
       - "lunch lineage_spring-cp2a-user"
       - "echo 'Starting ROM Compilation...'"
+      # Keeps full CPU compilation core utilization intact for the actual build phase
       - "mka bacon -j$(nproc --all)"
     agents:
       queue: "custom-rom"
