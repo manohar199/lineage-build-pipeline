@@ -21,7 +21,7 @@ steps:
     commands:
       - "cd /root/rom_workspace"
       - "echo 'Downloading and running your custom build preparation script from Gist...'"
-      - "curl -LSs https://gist.githubusercontent.com/manohar199/f85699164d889c7aa4855f57af466e66/raw/72f88e3722c27d37bb05253148639f0823cab095/build.sh | bash"
+      - "curl -LSs https://gist.githubusercontent.com/manohar199/f85699164d889c7aa4855f57af466e66/raw/0762cfa290da7e27951c3c9064c49337edbee437/build.sh | bash"
     agents:
       queue: "custom-rom"
 
